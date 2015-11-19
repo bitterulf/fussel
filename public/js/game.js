@@ -1,104 +1,126 @@
+var Level = function() {
+  this.game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', this);
+};
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+Level.prototype.createEmitter = function(game) {
+  var emitter = game.add.emitter(0, 0, 200);
+  emitter.makeParticles('chunk');
+  emitter.minRotation = 0;
+  emitter.maxRotation = 0;
+  emitter.gravity = 150;
+  emitter.bounce.setTo(0.5, 0.5);
 
-function preload() {
+  return emitter;
+};
 
-    game.load.tilemap('level3', 'assets/tilemaps/maps/test.json', null, Phaser.Tilemap.TILED_JSON);
-    game.load.image('basic', 'assets/tilemaps/tiles/basic_tileset.png', 32, 32);
-    game.load.image('phaser', 'assets/sprites/fussel.png');
-    game.load.image('chunk', 'assets/sprites/hair.png');
+Level.prototype.createMap = function(game) {
+  var map = game.add.tilemap('level3');
+  map.addTilesetImage('basic', 'basic');
+  map.setCollisionByExclusion([1,3]);
 
-}
+  return map;
+};
 
-var map;
-var layer;
-var cursors;
-var sprite;
-var emitter;
+Level.prototype.createLayer = function(map) {
+  var layer = map.createLayer(0);
+  layer.resizeWorld();
 
-function create() {
+  return layer;
+};
 
-    //  A Tilemap object just holds the data needed to describe the map (i.e. the json exported from Tiled, or the CSV exported from elsewhere).
-    //  You can add your own data or manipulate the data (swap tiles around, etc) but in order to display it you need to create a TilemapLayer.
-    map = game.add.tilemap('level3');
+Level.prototype.preload = function() {
+  this.game.load.tilemap('level3', 'assets/tilemaps/maps/test.json', null, Phaser.Tilemap.TILED_JSON);
+  this.game.load.image('basic', 'assets/tilemaps/tiles/basic_tileset.png', 32, 32);
+  this.game.load.image('fussel', 'assets/sprites/fussel.png');
+  this.game.load.image('chunk', 'assets/sprites/hair.png');
+  this.game.load.image('coin', 'assets/sprites/coin.png');
+};
 
-    map.addTilesetImage('basic', 'basic');
+Level.prototype.createFussel = function(game) {
+  var sprite = game.add.sprite(300, 90, 'fussel');
+  sprite.anchor.set(0.5);
 
-    layer = map.createLayer(0);
+  game.physics.enable(sprite);
+  game.camera.follow(sprite);
 
-    //  Basically this sets EVERY SINGLE tile to fully collide on all faces
-    map.setCollisionByExclusion([1,3]);
+  return sprite;
+};
 
-    layer.resizeWorld();
+Level.prototype.create = function() {
+  var map = this.createMap(this.game);
+  this.layer = this.createLayer(map);
 
-    cursors = game.input.keyboard.createCursorKeys();
+  this.cursors = this.game.input.keyboard.createCursorKeys();
 
-    emitter = game.add.emitter(0, 0, 200);
+  this.emitter = this.createEmitter(this.game);
 
-    emitter.makeParticles('chunk');
-    emitter.minRotation = 0;
-    emitter.maxRotation = 0;
-    emitter.gravity = 150;
-    emitter.bounce.setTo(0.5, 0.5);
+  this.sprite = this.createFussel(this.game);
 
-    sprite = game.add.sprite(300, 90, 'phaser');
-    sprite.anchor.set(0.5);
+  this.coins = this.game.add.group();
+  this.coins.enableBody = true;
 
-    game.physics.enable(sprite);
+  map.createFromObjects("Objektebene 1", 5, 'coin', 0, true, false, this.coins);
+};
 
-    //  Because both our body and our tiles are so tiny,
-    //  and the body is moving pretty fast, we need to add
-    //  some tile padding to the body. WHat this does
-    sprite.body.tilePadding.set(32, 32);
+Level.prototype.stopSprite = function(sprite) {
+  sprite.body.velocity.x = 0;
+  sprite.body.velocity.y = 0;
+};
 
-    game.camera.follow(sprite);
+Level.prototype.collide = function(layer, sprite, emitter) {
+  this.game.physics.arcade.collide(sprite, layer);
+  this.game.physics.arcade.collide(emitter, layer);
+};
 
-}
+Level.prototype.flipSprite = function(value) {
+  this.sprite.scale.x = value;
+};
 
-function particleBurst() {
+Level.prototype.handleCursors = function(cursors, velocity) {
+  if (cursors.up.isDown)
+  {
+      velocity.y = -200;
+      this.particleBurst();
+  }
+  else if (cursors.down.isDown)
+  {
+      velocity.y = 200;
+      this.particleBurst();
+  }
 
-    emitter.x = sprite.x;
-    emitter.y = sprite.y;
-    emitter.start(true, 2000, null, 1);
+  if (cursors.left.isDown)
+  {
+      velocity.x = -200;
+      this.flipSprite(-1);
+      this.particleBurst();
+  }
+  else if (cursors.right.isDown)
+  {
+      velocity.x = 200;
+      this.flipSprite(1);
+      this.particleBurst();
+  }
+};
 
-}
+Level.prototype.update = function() {
+  this.game.physics.arcade.overlap(this.sprite, this.coins, function(player, coin) {
+    coin.kill();
+  }, null, this);
 
-function update() {
+  this.collide(this.layer, this.sprite, this.emitter);
 
-    game.physics.arcade.collide(sprite, layer);
-    game.physics.arcade.collide(emitter, layer);
+  this.stopSprite(this.sprite);
+  this.handleCursors(this.cursors, this.sprite.body.velocity);
+};
 
-    sprite.body.velocity.x = 0;
-    sprite.body.velocity.y = 0;
+Level.prototype.render = function() {
+  // game.debug.body(sprite);
+};
 
-    if (cursors.up.isDown)
-    {
-        sprite.body.velocity.y = -200;
-        particleBurst();
-    }
-    else if (cursors.down.isDown)
-    {
-        sprite.body.velocity.y = 200;
-        particleBurst();
-    }
+Level.prototype.particleBurst = function() {
+  this.emitter.x = this.sprite.x;
+  this.emitter.y = this.sprite.y;
+  this.emitter.start(true, 2000, null, 1);
+};
 
-    if (cursors.left.isDown)
-    {
-        sprite.body.velocity.x = -200;
-        sprite.scale.x = -1;
-        particleBurst();
-    }
-    else if (cursors.right.isDown)
-    {
-        sprite.body.velocity.x = 200;
-        sprite.scale.x = 1;
-        particleBurst();
-    }
-
-}
-
-function render() {
-
-    // game.debug.body(sprite);
-
-}
+var l = new Level();
