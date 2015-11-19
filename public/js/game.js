@@ -65,6 +65,18 @@ Level.prototype.create = function() {
   this.title = this.game.add.bitmapText(8, 8, 'gem', 'Fussel 1.0', 16);
   this.title.maxWidth = 400;
   this.title.fixedToCamera = true;
+
+  this.points = 0;
+
+  this.score = this.game.add.bitmapText(8, 24, 'gem', '', 16);
+  this.score.fixedToCamera = true;
+
+  this.addPoints(0);
+};
+
+Level.prototype.addPoints = function(points) {
+  this.points += points;
+  this.score.text = 'score: ' + this.points;
 };
 
 Level.prototype.stopSprite = function(sprite) {
@@ -107,10 +119,14 @@ Level.prototype.handleCursors = function(cursors, velocity) {
   }
 };
 
+Level.prototype.collectCoin = function(player, coin) {
+  this.addPoints(1);
+  coin.kill();
+};
+
 Level.prototype.update = function() {
-  this.game.physics.arcade.overlap(this.sprite, this.coins, function(player, coin) {
-    coin.kill();
-  }, null, this);
+  var that = this;
+  this.game.physics.arcade.overlap(this.sprite, this.coins, this.collectCoin, null, this);
 
   this.collide(this.layer, this.sprite, this.emitter);
 
