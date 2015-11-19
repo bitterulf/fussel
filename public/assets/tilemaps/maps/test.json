@@ -21,9 +21,9 @@
                  "name":"",
                  "properties":
                     {
-
+                     "score":"10"
                     },
-                 "type":"",
+                 "type":"mine",
                  "visible":true,
                  "width":0,
                  "x":323,

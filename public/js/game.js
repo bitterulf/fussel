@@ -75,7 +75,7 @@ Level.prototype.create = function() {
 };
 
 Level.prototype.addPoints = function(points) {
-  this.points += points;
+  this.points += parseInt(points);
   this.score.text = 'score: ' + this.points;
 };
 
@@ -120,7 +120,8 @@ Level.prototype.handleCursors = function(cursors, velocity) {
 };
 
 Level.prototype.collectCoin = function(player, coin) {
-  this.addPoints(1);
+  console.log(coin);
+  this.addPoints(coin.score || 1);
   coin.kill();
 };
 
