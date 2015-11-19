@@ -34,6 +34,7 @@ Level.prototype.preload = function() {
   this.game.load.image('fussel', 'assets/sprites/fussel.png');
   this.game.load.image('chunk', 'assets/sprites/hair.png');
   this.game.load.image('coin', 'assets/sprites/coin.png');
+  this.game.load.bitmapFont('gem', 'assets/fonts/bitmapFonts/gem.png', 'assets/fonts/bitmapFonts/gem.xml');
 };
 
 Level.prototype.createFussel = function(game) {
@@ -60,6 +61,10 @@ Level.prototype.create = function() {
   this.coins.enableBody = true;
 
   map.createFromObjects("Objektebene 1", 5, 'coin', 0, true, false, this.coins);
+
+  this.title = this.game.add.bitmapText(8, 8, 'gem', 'Fussel 1.0', 16);
+  this.title.maxWidth = 400;
+  this.title.fixedToCamera = true;
 };
 
 Level.prototype.stopSprite = function(sprite) {
