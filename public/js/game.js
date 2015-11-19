@@ -37,8 +37,8 @@ Level.prototype.preload = function() {
   this.game.load.bitmapFont('gem', 'assets/fonts/bitmapFonts/gem.png', 'assets/fonts/bitmapFonts/gem.xml');
 };
 
-Level.prototype.createFussel = function(game) {
-  var sprite = game.add.sprite(300, 90, 'fussel');
+Level.prototype.createFussel = function(game, startPosition) {
+  var sprite = game.add.sprite(startPosition.x, startPosition.y, 'fussel');
   sprite.anchor.set(0.5);
 
   game.physics.enable(sprite);
@@ -51,11 +51,18 @@ Level.prototype.create = function() {
   var map = this.createMap(this.game);
   this.layer = this.createLayer(map);
 
+  var startPosition;
+  map.objects['Objektebene 1'].forEach(function(obj) {
+    if (obj.type == 'startPosition') {
+      startPosition = obj;
+    }
+  });
+
   this.cursors = this.game.input.keyboard.createCursorKeys();
 
   this.emitter = this.createEmitter(this.game);
 
-  this.sprite = this.createFussel(this.game);
+  this.sprite = this.createFussel(this.game, startPosition);
 
   this.coins = this.game.add.group();
   this.coins.enableBody = true;
@@ -120,7 +127,6 @@ Level.prototype.handleCursors = function(cursors, velocity) {
 };
 
 Level.prototype.collectCoin = function(player, coin) {
-  console.log(coin);
   this.addPoints(coin.score || 1);
   coin.kill();
 };

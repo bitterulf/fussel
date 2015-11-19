@@ -23,7 +23,7 @@
                     {
                      "score":"10"
                     },
-                 "type":"mine",
+                 "type":"",
                  "visible":true,
                  "width":0,
                  "x":323,
@@ -336,6 +336,20 @@
                  "width":0,
                  "x":469,
                  "y":459
+                },
+                {
+                 "gid":6,
+                 "height":0,
+                 "name":"start",
+                 "properties":
+                    {
+
+                    },
+                 "type":"startPosition",
+                 "visible":true,
+                 "width":0,
+                 "x":401,
+                 "y":177
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -379,6 +393,28 @@
             },
          "spacing":0,
          "tileheight":32,
+         "tilewidth":32
+        },
+        {
+         "firstgid":6,
+         "image":"..\/..\/sprites\/start.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "margin":0,
+         "name":"start",
+         "properties":
+            {
+
+            },
+         "spacing":0,
+         "tileheight":32,
+         "tileproperties":
+            {
+             "0":
+                {
+                 "ginko":"true"
+                }
+            },
          "tilewidth":32
         }],
  "tilewidth":32,
