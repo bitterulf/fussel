@@ -104,25 +104,21 @@ Level.prototype.handleCursors = function(cursors, velocity) {
   if (cursors.up.isDown)
   {
       velocity.y = -200;
-      this.particleBurst();
   }
   else if (cursors.down.isDown)
   {
       velocity.y = 200;
-      this.particleBurst();
   }
 
   if (cursors.left.isDown)
   {
       velocity.x = -200;
       this.flipSprite(-1);
-      this.particleBurst();
   }
   else if (cursors.right.isDown)
   {
       velocity.x = 200;
       this.flipSprite(1);
-      this.particleBurst();
   }
 };
 
@@ -134,6 +130,7 @@ Level.prototype.updateCollion = function(player, coin) {
 Level.prototype.collectCoin = function(player, coin) {
   this.addPoints(coin.score || 1);
   coin.kill();
+  this.particleBurst();
   if (this.coins.countLiving() == 0) {
     this.map.replace(4, 1);
     this.updateCollion();
@@ -157,7 +154,7 @@ Level.prototype.render = function() {
 Level.prototype.particleBurst = function() {
   this.emitter.x = this.sprite.x;
   this.emitter.y = this.sprite.y;
-  this.emitter.start(true, 2000, null, 1);
+  this.emitter.start(true, 2000, null, 10);
 };
 
 var l = new Level();
