@@ -16,8 +16,6 @@ Level.prototype.createEmitter = function(game) {
 Level.prototype.createMap = function(game) {
   var map = game.add.tilemap('level3');
   map.addTilesetImage('basic', 'basic');
-  map.setCollisionByExclusion([1,3]);
-
   return map;
 };
 
@@ -48,11 +46,13 @@ Level.prototype.createFussel = function(game, startPosition) {
 };
 
 Level.prototype.create = function() {
-  var map = this.createMap(this.game);
-  this.layer = this.createLayer(map);
+  this.map = this.createMap(this.game);
+  this.layer = this.createLayer(this.map);
+
+  this.updateCollion();
 
   var startPosition;
-  map.objects['Objektebene 1'].forEach(function(obj) {
+  this.map.objects['Objektebene 1'].forEach(function(obj) {
     if (obj.type == 'startPosition') {
       startPosition = obj;
     }
@@ -67,7 +67,7 @@ Level.prototype.create = function() {
   this.coins = this.game.add.group();
   this.coins.enableBody = true;
 
-  map.createFromObjects("Objektebene 1", 5, 'coin', 0, true, false, this.coins);
+  this.map.createFromObjects("Objektebene 1", 5, 'coin', 0, true, false, this.coins);
 
   this.title = this.game.add.bitmapText(8, 8, 'gem', 'Fussel 1.0', 16);
   this.title.maxWidth = 400;
@@ -126,9 +126,18 @@ Level.prototype.handleCursors = function(cursors, velocity) {
   }
 };
 
+Level.prototype.updateCollion = function(player, coin) {
+  this.map.setCollisionByExclusion([], false, this.layer, true);
+  this.map.setCollisionByExclusion([1,3], true, this.layer, true);
+};
+
 Level.prototype.collectCoin = function(player, coin) {
   this.addPoints(coin.score || 1);
   coin.kill();
+  if (this.coins.countLiving() == 0) {
+    this.map.replace(4, 1);
+    this.updateCollion();
+  }
 };
 
 Level.prototype.update = function() {
