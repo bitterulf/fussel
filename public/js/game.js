@@ -69,6 +69,12 @@ Level.prototype.create = function() {
 
   this.map.createFromObjects("Objektebene 1", 5, 'coin', 0, true, false, this.coins);
 
+  this.ui = this.game.add.graphics(0, 0);
+  this.ui.lineStyle(1, 0x000000, 0.8);
+  this.ui.beginFill(0xDEB383, 0.75);
+  this.ui.drawRect(0, 0, 256, 64);
+  this.ui.fixedToCamera = true;
+
   this.title = this.game.add.bitmapText(8, 8, 'gem', 'Fussel 1.0', 16);
   this.title.maxWidth = 400;
   this.title.fixedToCamera = true;
