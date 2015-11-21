@@ -31,8 +31,8 @@ Level.prototype.preload = function() {
   this.game.load.image('basic', 'assets/tilemaps/tiles/basic_tileset.png', 32, 32);
   this.game.load.image('fussel', 'assets/sprites/fussel.png');
   this.game.load.image('chunk', 'assets/sprites/hair.png');
-  this.game.load.image('coin', 'assets/sprites/coin.png');
   this.game.load.bitmapFont('gem', 'assets/fonts/bitmapFonts/gem.png', 'assets/fonts/bitmapFonts/gem.xml');
+  this.game.load.spritesheet('items', 'assets/sprites/items.png', 32, 32);
 };
 
 Level.prototype.createFussel = function(game, startPosition) {
@@ -43,6 +43,19 @@ Level.prototype.createFussel = function(game, startPosition) {
   game.camera.follow(sprite);
 
   return sprite;
+};
+
+Level.prototype.createItems = function(items) {
+  var group = this.game.add.group();
+  group.enableBody = true;
+
+  var that = this;
+
+  items.forEach(function(item) {
+    that.map.createFromObjects("Objektebene 1", item[0], 'items', item[1], true, false, group);
+  });
+
+  return group;
 };
 
 Level.prototype.create = function() {
@@ -64,10 +77,7 @@ Level.prototype.create = function() {
 
   this.sprite = this.createFussel(this.game, startPosition);
 
-  this.coins = this.game.add.group();
-  this.coins.enableBody = true;
-
-  this.map.createFromObjects("Objektebene 1", 5, 'coin', 0, true, false, this.coins);
+  this.items = this.createItems([[17, 0], [18, 1]]);
 
   this.ui = this.game.add.graphics(0, 0);
   this.ui.lineStyle(1, 0x000000, 0.8);
@@ -133,11 +143,26 @@ Level.prototype.updateCollion = function(player, coin) {
   this.map.setCollisionByExclusion([1,3], true, this.layer, true);
 };
 
-Level.prototype.collectCoin = function(player, coin) {
-  this.addPoints(coin.score || 1);
-  coin.kill();
+Level.prototype.collectItem = function(player, item) {
+  var id = item.texture.crop.x/32;
+  if (id == 0) {
+    this.addPoints(item.score || 1);
+  }
+  else if (id == 1) {
+    alert('you got the light');
+  }
+  item.kill();
   this.particleBurst();
-  if (this.coins.countLiving() == 0) {
+  var remainingCoins = 0;
+
+  this.items.forEachAlive(function(item) {
+    id = item.texture.crop.x/32;
+    if (id == 0) {
+      remainingCoins++;
+    }
+  });
+
+  if (remainingCoins == 0) {
     this.map.replace(4, 1);
     this.updateCollion();
   }
@@ -145,7 +170,7 @@ Level.prototype.collectCoin = function(player, coin) {
 
 Level.prototype.update = function() {
   var that = this;
-  this.game.physics.arcade.overlap(this.sprite, this.coins, this.collectCoin, null, this);
+  this.game.physics.arcade.overlap(this.sprite, this.items, this.collectItem, null, this);
 
   this.collide(this.layer, this.sprite, this.emitter);
 
