@@ -116,31 +116,45 @@ Level.prototype.flipSprite = function(value) {
   this.sprite.scale.x = value;
 };
 
+Level.prototype.handleMovement = function() {
+  var index = this.map.getTileWorldXY(this.sprite.position.x, this.sprite.position.y).index;
+  if (index == 5) {
+    this.layer.alpha = 0.05;
+  }
+  else {
+    this.layer.alpha = 1;
+  }
+};
+
 Level.prototype.handleCursors = function(cursors, velocity) {
   if (cursors.up.isDown)
   {
-      velocity.y = -200;
+    velocity.y = -200;
+    this.handleMovement();
   }
   else if (cursors.down.isDown)
   {
-      velocity.y = 200;
+    velocity.y = 200;
+    this.handleMovement();
   }
 
   if (cursors.left.isDown)
   {
-      velocity.x = -200;
-      this.flipSprite(-1);
+    velocity.x = -200;
+    this.flipSprite(-1);
+    this.handleMovement();
   }
   else if (cursors.right.isDown)
   {
-      velocity.x = 200;
-      this.flipSprite(1);
+    velocity.x = 200;
+    this.flipSprite(1);
+    this.handleMovement();
   }
 };
 
 Level.prototype.updateCollion = function(player, coin) {
   this.map.setCollisionByExclusion([], false, this.layer, true);
-  this.map.setCollisionByExclusion([1,3], true, this.layer, true);
+  this.map.setCollisionByExclusion([1,3,5], true, this.layer, true);
 };
 
 Level.prototype.collectItem = function(player, item) {
