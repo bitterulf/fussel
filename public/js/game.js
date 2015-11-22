@@ -1,4 +1,5 @@
-var Level = function() {
+var Level = function(levelFile) {
+  this.levelFile = levelFile;
   this.game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', this);
 };
 
@@ -14,7 +15,7 @@ Level.prototype.createEmitter = function(game) {
 };
 
 Level.prototype.createMap = function(game) {
-  var map = game.add.tilemap('level3');
+  var map = game.add.tilemap('level');
   map.addTilesetImage('basic', 'basic');
   return map;
 };
@@ -27,7 +28,7 @@ Level.prototype.createLayer = function(map) {
 };
 
 Level.prototype.preload = function() {
-  this.game.load.tilemap('level3', 'assets/tilemaps/maps/test.json', null, Phaser.Tilemap.TILED_JSON);
+  this.game.load.tilemap('level', this.levelFile, null, Phaser.Tilemap.TILED_JSON);
   this.game.load.image('basic', 'assets/tilemaps/tiles/basic_tileset.png', 32, 32);
   this.game.load.image('fussel', 'assets/sprites/fussel.png');
   this.game.load.image('chunk', 'assets/sprites/hair.png');
@@ -202,4 +203,4 @@ Level.prototype.particleBurst = function() {
   this.emitter.start(true, 2000, null, 10);
 };
 
-var l = new Level();
+var l = new Level('assets/tilemaps/maps/test.json');
