@@ -59,32 +59,18 @@ Level.prototype.createItems = function(items) {
   return group;
 };
 
-Level.prototype.create = function() {
-  this.map = this.createMap(this.game);
-  this.layer = this.createLayer(this.map);
+Level.prototype.getUiGraphic = function() {
+  var ui = this.game.add.graphics(0, 0);
+  ui.lineStyle(1, 0x000000, 0.8);
+  ui.beginFill(0xDEB383, 0.75);
+  ui.drawRect(0, 0, 256, 64);
+  ui.fixedToCamera = true;
 
-  this.updateCollion();
+  return ui;
+}
 
-  var startPosition;
-  this.map.objects['Objektebene 1'].forEach(function(obj) {
-    if (obj.type == 'startPosition') {
-      startPosition = obj;
-    }
-  });
-
-  this.cursors = this.game.input.keyboard.createCursorKeys();
-
-  this.emitter = this.createEmitter(this.game);
-
-  this.sprite = this.createFussel(this.game, startPosition);
-
-  this.items = this.createItems([[17, 0], [18, 1]]);
-
-  this.ui = this.game.add.graphics(0, 0);
-  this.ui.lineStyle(1, 0x000000, 0.8);
-  this.ui.beginFill(0xDEB383, 0.75);
-  this.ui.drawRect(0, 0, 256, 64);
-  this.ui.fixedToCamera = true;
+Level.prototype.setupUi = function() {
+  this.ui = this.getUiGraphic();
 
   this.title = this.game.add.bitmapText(8, 8, 'gem', 'Fussel 1.0', 16);
   this.title.maxWidth = 400;
@@ -96,6 +82,36 @@ Level.prototype.create = function() {
   this.score.fixedToCamera = true;
 
   this.addPoints(0);
+};
+
+Level.prototype.getStartPosition = function() {
+  var startPosition;
+  this.map.objects['Objektebene 1'].forEach(function(obj) {
+    if (obj.type == 'startPosition') {
+      startPosition = obj;
+    }
+  });
+
+  return startPosition;
+};
+
+Level.prototype.create = function() {
+  this.map = this.createMap(this.game);
+  this.layer = this.createLayer(this.map);
+
+  this.updateCollision();
+
+  var startPosition = this.getStartPosition();
+
+  this.cursors = this.game.input.keyboard.createCursorKeys();
+
+  this.emitter = this.createEmitter(this.game);
+
+  this.sprite = this.createFussel(this.game, startPosition);
+
+  this.items = this.createItems([[17, 0], [18, 1]]);
+
+  this.setupUi();
 };
 
 Level.prototype.addPoints = function(points) {
@@ -117,9 +133,8 @@ Level.prototype.flipSprite = function(value) {
   this.sprite.scale.x = value;
 };
 
-Level.prototype.handleMovement = function() {
-  var index = this.map.getTileWorldXY(this.sprite.position.x, this.sprite.position.y).index;
-  if (index == 5) {
+Level.prototype.switchDarkness = function(dark) {
+  if (dark) {
     this.layer.alpha = 0.05;
   }
   else {
@@ -127,47 +142,63 @@ Level.prototype.handleMovement = function() {
   }
 };
 
-Level.prototype.handleCursors = function(cursors, velocity) {
-  if (cursors.up.isDown)
-  {
-    velocity.y = -200;
-    this.handleMovement();
-  }
-  else if (cursors.down.isDown)
-  {
-    velocity.y = 200;
-    this.handleMovement();
+Level.prototype.handleMovement = function(cursors) {
+  if (!cursors.left.isDown && !cursors.right.isDown && !cursors.up.isDown && !cursors.down.isDown) {
+    return;
   }
 
-  if (cursors.left.isDown)
-  {
-    velocity.x = -200;
+  var index = this.map.getTileWorldXY(this.sprite.position.x, this.sprite.position.y).index;
+
+  this.switchDarkness(index == 5);
+};
+
+Level.prototype.modifyVelocity = function(cursors, velocity) {
+  var speed = 200;
+
+  velocity.y = cursors.up.isDown ? speed*-1 : velocity.y;
+  velocity.y = cursors.down.isDown ? speed : velocity.y;
+  velocity.x = cursors.left.isDown ? speed*-1 : velocity.x;
+  velocity.x = cursors.right.isDown ? speed : velocity.x;
+
+};
+
+Level.prototype.handleDirection = function(cursors) {
+  if (cursors.left.isDown) {
     this.flipSprite(-1);
-    this.handleMovement();
   }
-  else if (cursors.right.isDown)
-  {
-    velocity.x = 200;
+  else if (cursors.right.isDown) {
     this.flipSprite(1);
-    this.handleMovement();
   }
 };
 
-Level.prototype.updateCollion = function(player, coin) {
+Level.prototype.handleCursors = function(cursors, velocity) {
+  this.modifyVelocity(cursors, velocity);
+  this.handleDirection(cursors);
+  this.handleMovement(cursors);
+};
+
+Level.prototype.updateCollision = function(player, coin) {
   this.map.setCollisionByExclusion([], false, this.layer, true);
   this.map.setCollisionByExclusion([1,3,5], true, this.layer, true);
 };
 
-Level.prototype.collectItem = function(player, item) {
-  var id = item.texture.crop.x/32;
-  if (id == 0) {
-    this.addPoints(item.score || 1);
-  }
-  else if (id == 1) {
-    alert('you got the light');
-  }
-  item.kill();
+Level.prototype.collectCoin = function(player, coin) {
+  this.addPoints(coin.score || 1);
   this.particleBurst();
+  this.pickup(coin);
+};
+
+Level.prototype.collectLight = function(player, light) {
+  this.particleBurst();
+  this.pickup(light);
+};
+
+Level.prototype.pickup = function(item) {
+  item.kill();
+  this.afterPickup();
+};
+
+Level.prototype.afterPickup = function(player, item) {
   var remainingCoins = 0;
 
   this.items.forEachAlive(function(item) {
@@ -179,7 +210,17 @@ Level.prototype.collectItem = function(player, item) {
 
   if (remainingCoins == 0) {
     this.map.replace(4, 1);
-    this.updateCollion();
+    this.updateCollision();
+  }
+};
+
+Level.prototype.collectItem = function(player, item) {
+  var id = item.texture.crop.x/32;
+  if (id == 0) {
+    this.collectCoin(player, item);
+  }
+  else if (id == 1) {
+    this.collectLight(player, item);
   }
 };
 
