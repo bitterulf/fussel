@@ -1,3 +1,29 @@
+var Intro = function(game, name) {
+  this.name = name;
+  this.game = game;
+  this.game.state.add(name, this);
+};
+
+Intro.prototype.start = function() {
+  this.game.state.start(this.name);
+};
+
+Intro.prototype.preload = function() {
+  this.game.load.bitmapFont('gem', 'assets/fonts/bitmapFonts/gem.png', 'assets/fonts/bitmapFonts/gem.xml');
+};
+
+Intro.prototype.create = function() {
+  this.game.stage.backgroundColor = 0xffffff;
+  this.title = this.game.add.bitmapText(game.world.centerX, game.world.centerY, 'gem', 'Start', 16);
+  this.title.anchor.set(0.5);
+};
+
+Intro.prototype.update = function() {
+};
+
+Intro.prototype.render = function() {
+};
+
 var Level = function(game, name, levelFile) {
   this.name = name;
   this.levelFile = levelFile;
@@ -253,5 +279,6 @@ Level.prototype.particleBurst = function() {
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example');
 
 var l = new Level(game, 'level1', 'assets/tilemaps/maps/test.json');
-l.start();
+var i = new Intro(game, 'intro');
+i.start();
 
