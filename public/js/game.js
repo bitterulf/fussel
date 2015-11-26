@@ -1,5 +1,6 @@
 var Intro = function(game, data) {
   this.name = data.name;
+  this.links = data.links;
   this.game = game;
   this.game.state.add(this.name, this);
 };
@@ -12,14 +13,26 @@ Intro.prototype.preload = function() {
   this.game.load.bitmapFont('gem', 'assets/fonts/bitmapFonts/gem.png', 'assets/fonts/bitmapFonts/gem.xml');
 };
 
+Intro.prototype.createLink = function(x, y, title, state) {
+  var link = this.game.add.bitmapText(x, y, 'gem', title, 16);
+  link.anchor.set(0.5);
+  link.inputEnabled = true;
+  link.input.useHandCursor = true;
+  link.events.onInputDown.add(function() {
+    this.game.state.start(state);
+  }, this);
+};
+
 Intro.prototype.create = function() {
   this.game.stage.backgroundColor = 0xffffff;
-  this.title = this.game.add.bitmapText(game.world.centerX, game.world.centerY, 'gem', 'Start', 16);
+  var y = game.world.centerY;
+
+  this.title = this.game.add.bitmapText(game.world.centerX, game.world.centerY - 32, 'gem', 'Fussel', 32);
   this.title.anchor.set(0.5);
-  this.title.inputEnabled = true;
-  this.title.input.useHandCursor = true;
-  this.title.events.onInputDown.add(function() {
-    this.game.state.start('level1');
+
+  this.links.forEach(function(link){
+    this.createLink(game.world.centerX, y, '<'+link+'>', link);
+    y += 24;
   }, this);
 };
 
@@ -285,6 +298,6 @@ Level.prototype.particleBurst = function() {
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example');
 
 var l = new Level(game, {name: 'level1', file: 'assets/tilemaps/maps/test.json'});
-var i = new Intro(game, {name: 'intro'});
+var i = new Intro(game, {name: 'intro', links: ['level1', 'level2', 'level3'] });
 i.start();
 
