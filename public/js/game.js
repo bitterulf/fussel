@@ -1,6 +1,12 @@
-var Level = function(levelFile) {
+var Level = function(game, name, levelFile) {
+  this.name = name;
   this.levelFile = levelFile;
-  this.game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example', this);
+  this.game = game;
+  this.game.state.add(name, this);
+};
+
+Level.prototype.start = function() {
+  this.game.state.start(this.name);
 };
 
 Level.prototype.createEmitter = function(game) {
@@ -244,4 +250,8 @@ Level.prototype.particleBurst = function() {
   this.emitter.start(true, 2000, null, 10);
 };
 
-var l = new Level('assets/tilemaps/maps/test.json');
+var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example');
+
+var l = new Level(game, 'level1', 'assets/tilemaps/maps/test.json');
+l.start();
+
