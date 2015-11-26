@@ -1,7 +1,7 @@
-var Intro = function(game, name) {
-  this.name = name;
+var Intro = function(game, data) {
+  this.name = data.name;
   this.game = game;
-  this.game.state.add(name, this);
+  this.game.state.add(this.name, this);
 };
 
 Intro.prototype.start = function() {
@@ -29,11 +29,11 @@ Intro.prototype.update = function() {
 Intro.prototype.render = function() {
 };
 
-var Level = function(game, name, levelFile) {
-  this.name = name;
-  this.levelFile = levelFile;
+var Level = function(game, data) {
+  this.name = data.name;
+  this.file = data.file;
   this.game = game;
-  this.game.state.add(name, this);
+  this.game.state.add(this.name, this);
 };
 
 Level.prototype.start = function() {
@@ -65,7 +65,7 @@ Level.prototype.createLayer = function(map) {
 };
 
 Level.prototype.preload = function() {
-  this.game.load.tilemap('level', this.levelFile, null, Phaser.Tilemap.TILED_JSON);
+  this.game.load.tilemap('level', this.file, null, Phaser.Tilemap.TILED_JSON);
   this.game.load.image('basic', 'assets/tilemaps/tiles/basic_tileset.png', 32, 32);
   this.game.load.image('fussel', 'assets/sprites/fussel.png');
   this.game.load.image('chunk', 'assets/sprites/hair.png');
@@ -133,6 +133,7 @@ Level.prototype.getStartPosition = function() {
 };
 
 Level.prototype.create = function() {
+  this.game.stage.backgroundColor = 0x000000;
   this.map = this.createMap(this.game);
   this.layer = this.createLayer(this.map);
 
@@ -283,7 +284,7 @@ Level.prototype.particleBurst = function() {
 
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example');
 
-var l = new Level(game, 'level1', 'assets/tilemaps/maps/test.json');
-var i = new Intro(game, 'intro');
+var l = new Level(game, {name: 'level1', file: 'assets/tilemaps/maps/test.json'});
+var i = new Intro(game, {name: 'intro'});
 i.start();
 
