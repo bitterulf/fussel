@@ -16,6 +16,11 @@ Intro.prototype.create = function() {
   this.game.stage.backgroundColor = 0xffffff;
   this.title = this.game.add.bitmapText(game.world.centerX, game.world.centerY, 'gem', 'Start', 16);
   this.title.anchor.set(0.5);
+  this.title.inputEnabled = true;
+  this.title.input.useHandCursor = true;
+  this.title.events.onInputDown.add(function() {
+    this.game.state.start('level1');
+  }, this);
 };
 
 Intro.prototype.update = function() {
